@@ -27,7 +27,19 @@ def evaluate(
         f"Evaluating risk for user_id={payload.user_id}, event_type={payload.event_type}"
     )
 
-    rules_score, final_score, reasons, risk_level, decision = evaluate_risk(payload)
+    rules_score, final_score, reasons, risk_level, decision, breakdown = evaluate_risk(payload)
+
+    logger.info(
+        f"Score breakdown: device={breakdown.device_subscore}, "
+        f"network={breakdown.network_subscore}, "
+        f"behavior={breakdown.behavior_subscore}, "
+        f"geo={breakdown.geo_subscore}, "
+        f"sequence={breakdown.sequence_subscore}, "
+        f"active_signal_count={breakdown.active_signal_count}, "
+        f"recent_sensitive_event_count={breakdown.recent_sensitive_event_count}, "
+        f"country_changed_flag={breakdown.country_changed_flag}, "
+        f"distance_from_previous_km={breakdown.distance_from_previous_km}"
+    )
 
     recommended_action_map = {
         "allow": "none",

@@ -2,18 +2,19 @@ from app.core.policy import get_policy
 from app.models.request import RiskEvaluateRequest
 
 
-def _detect_network_switching_anomaly(payload: RiskEvaluateRequest) -> bool:
+def get_network_switching_flag(payload: RiskEvaluateRequest) -> int:
     if not payload.history:
-        return False
+        return 0
 
     history = payload.history
     policy = get_policy()
 
-    return (
+    detected = (
         history.distinct_ips_last_1h >= policy.thresholds["distinct_ips_last_1h"]
         or history.distinct_network_types_last_1h >= policy.thresholds["distinct_network_types_last_1h"]
         or history.vpn_switch_count_last_1h >= policy.thresholds["vpn_switch_count_last_1h"]
     )
+    return 1 if detected else 0
 
 
 def evaluate_network_signals(payload: RiskEvaluateRequest) -> tuple[int, list[str]]:
@@ -35,7 +36,7 @@ def evaluate_network_signals(payload: RiskEvaluateRequest) -> tuple[int, list[st
             score += policy.rule_weights["tor_detected"]
             reasons.append("tor_detected")
 
-    if _detect_network_switching_anomaly(payload):
+    if get_network_switching_flag(payload):
         score += policy.rule_weights["network_switching_anomaly"]
         reasons.append("network_switching_anomaly")
 

@@ -18,7 +18,7 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return radius * c
 
 
-def _get_distance_km(payload: RiskEvaluateRequest) -> float | None:
+def get_distance_km(payload: RiskEvaluateRequest) -> float | None:
     if not payload.geo or not payload.history or not payload.history.previous_geo:
         return None
 
@@ -43,33 +43,46 @@ def _get_distance_km(payload: RiskEvaluateRequest) -> float | None:
     )
 
 
-def _detect_impossible_travel(payload: RiskEvaluateRequest) -> bool:
+def get_country_changed_flag(payload: RiskEvaluateRequest) -> int:
+    if not payload.geo or not payload.history or not payload.history.previous_geo:
+        return 0
+
+    current_country = payload.geo.country
+    previous_country = payload.history.previous_geo.country
+
+    if current_country and previous_country and current_country != previous_country:
+        return 1
+
+    return 0
+
+
+def get_impossible_travel_flag(payload: RiskEvaluateRequest) -> int:
     if not payload.history or not payload.history.previous_login_at:
-        return False
+        return 0
 
     policy = get_policy()
-    distance_km = _get_distance_km(payload)
+    distance_km = get_distance_km(payload)
     if distance_km is None:
-        return False
+        return 0
 
     delta_hours = (payload.timestamp - payload.history.previous_login_at).total_seconds() / 3600
     if delta_hours <= 0:
-        return False
+        return 0
 
     speed_kmh = distance_km / delta_hours
-    return speed_kmh > policy.thresholds["impossible_travel_speed_kmh"]
+    return 1 if speed_kmh > policy.thresholds["impossible_travel_speed_kmh"] else 0
 
 
-def _detect_geo_anomaly(payload: RiskEvaluateRequest) -> bool:
-    if _detect_impossible_travel(payload):
-        return False
+def get_geo_anomaly_flag(payload: RiskEvaluateRequest) -> int:
+    if get_impossible_travel_flag(payload):
+        return 0
 
     policy = get_policy()
-    distance_km = _get_distance_km(payload)
+    distance_km = get_distance_km(payload)
     if distance_km is None:
-        return False
+        return 0
 
-    return distance_km >= policy.thresholds["geo_anomaly_distance_km"]
+    return 1 if distance_km >= policy.thresholds["geo_anomaly_distance_km"] else 0
 
 
 def evaluate_geo_signals(payload: RiskEvaluateRequest) -> tuple[int, list[str]]:
@@ -77,20 +90,14 @@ def evaluate_geo_signals(payload: RiskEvaluateRequest) -> tuple[int, list[str]]:
     score = 0
     reasons: list[str] = []
 
-    geo = payload.geo
-    history = payload.history
+    if get_country_changed_flag(payload):
+        score += policy.rule_weights["new_country_detected"]
+        reasons.append("new_country_detected")
 
-    if geo and history and history.previous_geo:
-        current_country = geo.country
-        previous_country = history.previous_geo.country
-        if current_country and previous_country and current_country != previous_country:
-            score += policy.rule_weights["new_country_detected"]
-            reasons.append("new_country_detected")
-
-    if _detect_impossible_travel(payload):
+    if get_impossible_travel_flag(payload):
         score += policy.rule_weights["impossible_travel_detected"]
         reasons.append("impossible_travel_detected")
-    elif _detect_geo_anomaly(payload):
+    elif get_geo_anomaly_flag(payload):
         score += policy.rule_weights["geo_anomaly_detected"]
         reasons.append("geo_anomaly_detected")
 

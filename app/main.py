@@ -8,6 +8,9 @@ from app.api.v1.endpoints.capabilities import router as capabilities_router
 from app.api.v1.endpoints.health import router as health_router
 from app.api.v1.endpoints.risk import router as risk_router
 from app.api.v1.endpoints.policy import router as policy_router
+from app.api.v2.endpoints.hybrid_risk import router as hybrid_risk_router
+from app.api.v2.endpoints.capabilities import router as capabilities_router
+from app.api.v2.endpoints.comparison import router as comparison_router
 from app.core.config import settings
 from app.core.exceptions import (
     rate_limit_exception_handler,
@@ -55,3 +58,6 @@ app.include_router(health_router)
 app.include_router(capabilities_router)
 app.include_router(risk_router)
 app.include_router(policy_router)
+app.include_router(hybrid_risk_router)
+app.include_router(capabilities_router)
+app.include_router(comparison_router)
