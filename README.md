@@ -66,6 +66,8 @@ Hybrid risk engine with:
 ---   
 
 ## v1 response model
+
+```json
 {
   "request_id": "rsk_xxxxx",
   "rules_score": 78,
@@ -79,9 +81,12 @@ Hybrid risk engine with:
   "recommended_action": "require_mfa",
   "engine_version": "rules-v1.2"
 }
+```
 ---
 
 ## v2 response model
+
+```json
 {
   "request_id": "rsk_xxxxx",
   "rules_score": 78,
@@ -95,9 +100,12 @@ Hybrid risk engine with:
   "recommended_action": "require_mfa",
   "engine_version": "rules-v1.2"
 }
+```
 ---
 
 ## fallback response model
+
+```json
 {
   "rules_score": 78,
   "ml_score": null,
@@ -113,10 +121,12 @@ Hybrid risk engine with:
   "model_version": null,
   "engine_version": "rules-only-fallback"
 }
+```
 ---
 
 ## v2 comparison response
 
+```json
 {
   "v1_rules_only": {
     "request_id": "comparison-v1",
@@ -153,6 +163,7 @@ Hybrid risk engine with:
     "risk_level_changed": true
   }
 }
+```
 ---
 
 ## ML pipeline status
