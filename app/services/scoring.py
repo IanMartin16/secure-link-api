@@ -21,7 +21,7 @@ def evaluate_risk(
         + breakdown.sequence_subscore
     )
 
-    rules_score = min(rules_score, 100)
+    rules_score = max(0, min(rules_score, 100))
     final_score = rules_score
 
     if final_score <= policy.decision_ranges.low_max:

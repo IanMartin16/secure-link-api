@@ -14,6 +14,7 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         sin(dlat / 2) ** 2
         + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
     )
+    a = max(0.0, min(a, 1.0))
     c = 2 * asin(sqrt(a))
     return radius * c
 

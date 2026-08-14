@@ -3,8 +3,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "Secure_Link API"
-    app_version: str = "0.1.0"
-    app_env: str = "local"
+    app_version: str = "1.0.0"
+    APP_VERSION: str = "2.0.0"
+    app_env: str = "development"
+    ENVIRONMENT: str = "development"
     log_level: str = "INFO"
     api_key: str = "change-me-in-production"
 
